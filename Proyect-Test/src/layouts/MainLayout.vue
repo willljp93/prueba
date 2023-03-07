@@ -12,10 +12,49 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          My App
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <q-space />
+
+        <q-btn-dropdown
+          v-model:menu="isCartNotEmpty"
+          color="primary"
+          label="Cart"
+          icon="shopping_cart"
+        >
+          <q-card>
+            <q-card-section>
+              <q-list dense>
+                <q-item
+                  v-for="(item, index) in cartItems"
+                  :key="index"
+                >
+                  <q-item-section>
+                    <q-item-label>{{ item.name }}</q-item-label>
+                    <q-item-label caption>{{ item.price }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn
+                      round
+                      dense
+                      flat
+                      icon="remove"
+                      @click="removeItem(index)"
+                    />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card-section>
+            <q-card-actions>
+              <q-btn
+                color="primary"
+                label="Go to Cart"
+                @click="goToCart"
+              />
+            </q-card-actions>
+          </q-card>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
@@ -48,51 +87,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
-
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'MainLayout',
@@ -103,13 +98,57 @@ export default defineComponent({
 
   setup () {
     const leftDrawerOpen = ref(false)
+    const cartItems = ref([])
+    const router = useRouter()
+
+    function toggleLeftDrawer () {
+      leftDrawerOpen.value = !leftDrawerOpen.value
+    }
+
+    function removeItem (index) {
+      cartItems.value.splice(index, 1)
+    }
+
+    function goToCart () {
+      const itemsParam = cartItems.value.map(item => encodeURIComponent(JSON.stringify(item))).join(',')
+      router.push(`/cart?items=${itemsParam}`)
+    }
+
+    const isCartNotEmpty = computed(() => cartItems.value.length > 0)
 
     return {
-      essentialLinks: linksList,
+      essentialLinks: [
+        {
+          title: 'Home',
+          caption: 'Homepage',
+          icon: 'home',
+          link: '/'
+        },
+        {
+          title: 'Products',
+          caption: 'View our products',
+          icon: 'store',
+          link: '/products'
+        },
+        {
+          title: 'About Us',
+          caption: 'Learn about our company',
+          icon: 'info',
+          link: '/about'
+        },
+        {
+          title: 'Contact Us',
+          caption: 'Get in touch',
+          icon: 'email',
+          link: '/contact'
+        }
+      ],
       leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+      toggleLeftDrawer,
+      cartItems,
+      removeItem,
+      goToCart,
+      isCartNotEmpty
     }
   }
 })
